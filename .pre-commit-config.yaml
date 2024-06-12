@@ -1,0 +1,43 @@
+repos:
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        entry: black
+        language: system
+        types: [python]
+
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        files: \.py$
+        args: [
+            "-rn", # Disable the full report
+            "-sn", # Disable the overall score
+            "--rcfile=.pylintrc", # Use the .pylintrc file in the root directory
+            "--load-plugins=pylint.extensions.docparams", # Load the docparams plugin to check docstring parameter consistency
+          ]
+
+      - id: requirements
+        name: requirements
+        entry: bash -c 'venv/bin/pip3 freeze > requirements.txt; git add requirements.txt'
+        language: system
+        pass_filenames: false
+        stages: [commit]
+
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        files: \.py$
+        args: [
+            "--config-file=mypy.ini", # Use the mypy.ini file in the root directory
+          ]
+
+      - id: test
+        name: test
+        entry: pytest
+        language: system
+        files: tests/.*\.py$
+        stages: [commit, push]
